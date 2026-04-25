@@ -34,11 +34,13 @@ The codebase is organized into two main directories:
 * **MS-COCO**: Download the COCO 2014 dataset from [MS-COCO Official Website](https://cocodataset.org/#download) and place it under the `MSCOCO` directory.
 * **NUS-WIDE**: Download the Flickr folder from Kaggle and place it under the `NUS-WIDE` directory.
 
-### 2. Ground-Truth Semantic Prior Preparation
-Before extracting multi-granularity topics, we first aggregate the label co-occurrence patterns from the training set. For each dataset, extract the ground-truth label combinations of all training samples and save them as a text file. These serve as the foundational input for our semantic routing. The files used are as follows:
-* `Corel5k/Corel5k/my_train_label.txt` for Corel5k
-* `MSCOCO/targets2014/train/train_labels.txt` for MSCOCO
-* `NUS-WIDE/mine/train_image_label.txt` for NUS-WIDE
+### 2. Dataset Preparation and Annotation Loading
+Unlike traditional approaches that rely on raw text summaries, DyT-HPL leverages structured annotation matrices to ensure robust semantic alignment. Ensure that the image lists, class vocabularies, and label annotations are correctly placed in the root directory. 
+
+Taking Corel5k as an example, our custom `Corel5k_DyTHPL` dataset class loads the following core structures:
+* `corel5k_words.txt`: Contains the vocabulary of the target class names.
+* `corel5k_train_list.txt` & `corel5k_test_list.txt`: The respective image file lists for training and evaluation.
+* `corel5k_train_annot.mat` & `corel5k_test_annot.mat`: The ground-truth label annotation matrices used as the foundational input for our semantic routing mechanism.
 
 ### 3. Offline Hierarchical Semantic Clustering (`warmup_prompts.py`)
 Instead of relying on predefined rigid label graphs, we execute `warmup_prompts.py` to perform offline hierarchical clustering on the aggregated label combinations. This step constructs the essential multi-granularity (coarse-mid-fine) semantic prior pool. 
