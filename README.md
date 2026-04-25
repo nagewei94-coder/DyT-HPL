@@ -34,24 +34,26 @@ The codebase is organized into two main directories:
 * **MS-COCO**: Download the COCO 2014 dataset from [MS-COCO Official Website](https://cocodataset.org/#download) and place it under the `MSCOCO` directory.
 * **NUS-WIDE**: Download the Flickr folder from Kaggle and place it under the `NUS-WIDE` directory.
 
-### 2. Data Preprocessing
-For each dataset, extract the label combinations of all training samples and save them as a text file. The label combination files used are as follows:
+### 2. Ground-Truth Semantic Prior Preparation
+Before extracting multi-granularity topics, we first aggregate the label co-occurrence patterns from the training set. For each dataset, extract the ground-truth label combinations of all training samples and save them as a text file. These serve as the foundational input for our semantic routing. The files used are as follows:
 * `Corel5k/Corel5k/my_train_label.txt` for Corel5k
 * `MSCOCO/targets2014/train/train_labels.txt` for MSCOCO
 * `NUS-WIDE/mine/train_image_label.txt` for NUS-WIDE
 
-### 3. Multi-granularity Semantic Prior Extraction
-The extracted label combination files are used as input to the hierarchical clustering module. Set the appropriate number of clusters/topics, specify the input file path, and define the output path.
-For each training sample, semantic clustering assigns hierarchical priors. The final output is a distribution file mapping each image ID to its semantic prompt indices.
-*(Note: Pre-processed distribution files are provided in the respective target/train folders).*
+### 3. Offline Hierarchical Semantic Clustering (`warmup_prompts.py`)
+Instead of relying on predefined rigid label graphs, we execute `warmup_prompts.py` to perform offline hierarchical clustering on the aggregated label combinations. This step constructs the essential multi-granularity (coarse-mid-fine) semantic prior pool. 
+For each training sample, this module assigns hierarchical priors, outputting a distribution file that maps each image ID to its specific multi-scale semantic prompt indices. 
+*(Note: Pre-processed distribution files are provided in the respective target/train folders, e.g., `img_to_index2+3(300).txt`).*
 
-### 4. Model Training and Evaluation
+### 4. DyT-HPL Training and Evaluation
+This stage activates the core **Dynamic Topic-based Hierarchical Prompt Learning** framework. The model utilizes a frozen ViT query branch and transiently injects the extracted hierarchical prompts. The training process is supervised by our tailored tripartite optimization objective (defined in `losses.py`), which explicitly mitigates prompt mode collapse.
+
 Using the Corel5k dataset as an example:
-Ensure that `args.data_corel5k` points to the Corel5k directory and `args.corel5k_num_class` is set to 260. Also, verify that the file path in the Corel5k DataLoader within `helper_function.py` correctly points to the extracted prior file (e.g., `../Corel5k/target/train/img_to_index...txt`).
+First, ensure that `args.data_corel5k` points to the `Corel5k` directory and `args.corel5k_num_class` is set to 260. Verify that the file path in the `helper_functions.py` DataLoader correctly points to the extracted prior file generated in Step 3.
 
-Then, run the model using the following command:
+Then, launch the training and evaluation pipeline using the dedicated script:
 ```bash
-python Corel5k_main.py
+python corel5k_dythpl.py
 ```
 
 ## System Requirements
